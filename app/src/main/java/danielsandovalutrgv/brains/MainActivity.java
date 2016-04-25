@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private Paint paint = new Paint();
     private Path path = new Path();
     Context context = this;
+    private DrawerLayout mDrawerLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,11 +53,12 @@ public class MainActivity extends AppCompatActivity {
         fab3.hide();
         fab4.hide();
         assert fab!=null;
+        final EditText newText  = (EditText) findViewById(R.id.editText);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(!fab1.isShown()){
-                    fab1.show();//sendMessage(view);
+                    fab1.show();
                     fab2.show();
                     fab3.show();
                     fab4.show();
@@ -80,11 +86,12 @@ public class MainActivity extends AppCompatActivity {
         fab4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText newText  = (EditText) findViewById(R.id.editText);
+
                 newText.setVisibility(View.VISIBLE);
                 fab.callOnClick();
             }
         });
+
     }
 
     /**
@@ -146,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -160,5 +166,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+        EditText ed = (EditText) findViewById(R.id.editText);
+        if(ed.hasFocus()){
+            ed.clearFocus();
+        }
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 }

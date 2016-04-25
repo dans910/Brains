@@ -97,5 +97,12 @@
     <string name="videobutton">videobutton</string>
     <string name="micbutton">micButton</string>
     <string name="stoprecord">stopRecord</string>
-    <string name="press_mic_button_to_start_recording">Press Mic Button To Start Recording</string>
+    <string name="press_mic_button_to_start_recording">Press Button To Start Recording</string>
+    <string name="title_activity_menu">menu</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="vRecord">startVrecord</string>
+    <string name="vStop">stopVrecord</string>
+    <string name="vidle">vIdle</string>
 </resources>
