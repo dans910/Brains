@@ -1,6 +1,7 @@
 package danielsandovalutrgv.brains;
 
 import android.annotation.TargetApi;
+import android.media.projection.MediaProjection;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.DragEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -42,21 +44,26 @@ import android.view.View.DragShadowBuilder;
 import android.view.View.OnDragListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.jar.Manifest;
 
 public class menu extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     Context context = this;
     private DrawerLayout drawer;
-    private boolean record = false;
-    MediaRecorder videoRecorder;
-    final private int REQUEST_STORAGE_VIDEO = 1;
+    private boolean recording;
+    final private MediaRecorder videoRecorder = new MediaRecorder();
+    final private int REQUEST_STORAGE_VIDEO = 2;
     final private int REQUEST_STORAGE_AUDIO = 1;
+    private boolean continueRecord;
     private boolean recgranted, vidgranted;
     private View rec;
     private RelativeLayout editLayout;
     private int xd, yd;
     private ViewGroup el;
+    private String br = "Brains";
+    final private File videoDirectory = new File(Environment.getExternalStorageDirectory()+ "/" +br, "Video"+ "/" );
+    private MediaProjection mp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,26 +153,39 @@ public class menu extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 //if We have permission to write to external storage
-                /*
-                if(checkCallingOrSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    String br = "Brains";
-                    final File videoDirectory = new File(Environment.getExternalStorageDirectory()+ "/" +br, "Video"+ "/" );
-                    if (fab3.getTag().equals("@string/vidle")) {
 
-                        fab3.setImageResource(R.drawable.ic_play);
-                        fab3.setTag("@string/vRecord");
-                    } else if (fab3.getTag().equals("@string/vRecord")) {
-                        fab3.setImageResource(R.drawable.ic_stop);
-                        fab3.setColorFilter(Color.RED);
-                        fab3.setTag("@string/vStop");
-                    } else if (fab3.getTag().equals("@string/vStop")) {
-                        fab3.setImageResource(R.drawable.ic_gallery);
-                        fab3.setTag("@string/vidle");
+                if(checkCallingOrSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(menu.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_VIDEO);
+                    if(!continueRecord){
+                        return;
                     }
                 }
-                else{
-
-                }*/
+                if (fab3.getTag().equals("@string/vidle")) {
+                    initiateScreenCapture();
+                    fab3.setImageResource(R.drawable.ic_play);
+                    fab3.setTag("@string/vRecord");
+                    Toast.makeText(context, "Press Play to Record Screen", Toast.LENGTH_SHORT).show();
+                } else if (fab3.getTag().equals("@string/vRecord")) {
+                    fab3.setImageResource(R.drawable.ic_stop);
+                    fab3.setColorFilter(Color.RED);
+                    fab3.setTag("@string/vStop");
+                    try {
+                        videoRecorder.prepare();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    videoRecorder.start();
+                    recording = true;
+                    Toast.makeText(context, "Press Stop to stop Recording Screen", Toast.LENGTH_SHORT).show();
+                } else if (fab3.getTag().equals("@string/vStop")) {
+                    fab3.setImageResource(R.drawable.ic_gallery);
+                    fab3.setTag("@string/vidle");
+                    fab3.clearColorFilter();
+                    if(recording){
+                        videoRecorder.stop();
+                        videoRecorder.reset();
+                    }
+                }
             }
         });
         fab3.setOnLongClickListener(new View.OnLongClickListener() {
@@ -200,27 +220,34 @@ public class menu extends AppCompatActivity
             public boolean onTouch(View v, MotionEvent event) {
                 final int x = (int) event.getRawX();
                 final int y = (int) event.getRawY();
-                switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        RelativeLayout.LayoutParams plp = (RelativeLayout.LayoutParams) v.getLayoutParams();
-                        xd = plp.leftMargin;
-                        yd = plp.topMargin;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) v.getLayoutParams();
-                        p.leftMargin = x - xd;
-                        p.topMargin = y - yd;
-                        p.rightMargin = -250;
-                        p.bottomMargin = -250;
-                        v.setLayoutParams(p);
-                        break;
-                    default:
-                        break;
+                if(event.getPointerCount()>1){
+                    switch (event.getAction()){
+                        case MotionEvent.ACTION_DOWN:
+                            RelativeLayout.LayoutParams plp = (RelativeLayout.LayoutParams) v.getLayoutParams();
+                            xd = plp.leftMargin;
+                            yd = plp.topMargin;
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) v.getLayoutParams();
+                            p.leftMargin = x - xd;
+                            p.topMargin = y - yd;
+                            p.bottomMargin = y;
+                            p.rightMargin = x;
+
+                            v.setLayoutParams(p);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else{
+                    v.requestFocus();
                 }
                 el.invalidate();
                 return true;
             }
         });
+
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -284,6 +311,18 @@ public class menu extends AppCompatActivity
                 else{
                     recordAudio(rec);
                 }
+                break;
+            case REQUEST_STORAGE_VIDEO:
+                if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    AlertDialog ration = new AlertDialog.Builder(context).create();
+                    ration.setTitle("Storage Permission Denied");
+                    ration.setMessage("Need permission to store video file.");
+                    ration.show();
+                }
+                else{
+                    continueRecord = true;
+                }
+                break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
@@ -378,6 +417,18 @@ public class menu extends AppCompatActivity
         super.onRestoreInstanceState(savedInstanceState);
     }
 
+    private void initiateScreenCapture(){
+        videoRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
 
+        videoDirectory.mkdirs();
+        String video_path = videoDirectory.getAbsolutePath() + "/" + "video.mp4";
+
+        videoRecorder.setOutputFile(video_path);
+        videoRecorder.setMaxDuration(60000);
+        videoRecorder.setMaxFileSize(10000000);
+
+    }
 
 }
