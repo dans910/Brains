@@ -75,7 +75,7 @@
         app:layout_anchor="@id/fab2"
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchorGravity="top|center_horizontal"
-        android:src="@drawable/ic_gallery"
+        android:src="@drawable/ic_play"
         android:background="@color/colorPrimary"
         app:backgroundTint="@color/colorPrimary"
         app:rippleColor="@color/colorAccent"

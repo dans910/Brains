@@ -105,4 +105,7 @@
     <string name="vRecord">startVrecord</string>
     <string name="vStop">stopVrecord</string>
     <string name="vidle">vIdle</string>
+    <string name="aIdle">aIdle</string>
+    <string name="startArec">startaudiorecording</string>
+    <string name="stopArec">stopaudiorecording</string>
 </resources>
