@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package app.alonso.com.brainstorm;
+package danielsandovalutrgv.brains;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.design.widget.FloatingActionButton;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -34,7 +35,7 @@ public class MyTouchEventView extends View {
     public Paint circlePaint = new Paint();
     public Path circlePath = new Path();
 
-    public MyTouchEventView(Context context, Button buttonReset, Button buttonRandomColor) {
+    public MyTouchEventView(Context context, FloatingActionButton buttonReset/*, Button buttonRandomColor*/) {
         super(context);
 
         paint.setAntiAlias(true);
@@ -61,7 +62,7 @@ public class MyTouchEventView extends View {
                 postInvalidate();
             }
         });
-
+/*
         // Random Color Button
         buttonRandomColor.setOnClickListener(new View.OnClickListener() {
 
@@ -84,7 +85,7 @@ public class MyTouchEventView extends View {
 
                 else if(randomNumber == 6) {paint.setColor(Color.MAGENTA);}
             }
-        });
+        });*/
     }
 
     //@Override

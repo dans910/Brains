@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         fab3.hide();
         fab4.hide();
         assert fab!=null;
-        final EditText newText  = (EditText) findViewById(R.id.editText);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                newText.setVisibility(View.VISIBLE);
                 fab.callOnClick();
             }
         });
@@ -179,10 +177,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.doubleBackToExitPressedOnce = true;
         Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-        EditText ed = (EditText) findViewById(R.id.editText);
-        if(ed.hasFocus()){
-            ed.clearFocus();
-        }
+
         new Handler().postDelayed(new Runnable() {
 
             @Override

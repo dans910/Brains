@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.design.widget.CoordinatorLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseIntArray;
@@ -67,7 +68,8 @@ public class menu extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     Context context = this;
     private DrawerLayout drawer;
-    private boolean recording;
+    private boolean recording = false;
+    private boolean vrecording = false;
     private static final int REQUEST_CODE = 1000;
     private MediaProjectionManager videoPM;
     private MediaRecorder videoRecorder, audioRecorder;
@@ -126,7 +128,9 @@ public class menu extends AppCompatActivity
         buttonActions();
         fab3.setTag("@string/vidle");
         fab2.setTag("@string/aIdle");
+        fab1.setColorFilter(Color.RED);
 
+        //Screen Capture variables
         DisplayMetrics metrics = new DisplayMetrics();
 
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -135,58 +139,16 @@ public class menu extends AppCompatActivity
         audioRecorder = new MediaRecorder();
         videoPM = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
+        //For Drawing
+        CoordinatorLayout relativeLayout;
+        CoordinatorLayout.LayoutParams params;
+        relativeLayout = (CoordinatorLayout) findViewById(R.id.root);
+        params = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT);
+        MyTouchEventView touch = new MyTouchEventView(this, fab1);
+        touch.setLayoutParams(params);
+        relativeLayout.addView(touch);
 
-        assert fab!=null;
-        final EditText newText  = (EditText) findViewById(R.id.editText);
 
-
-
-        /*
-         * Add Comment Button
-         */
-        fab4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                newText.setVisibility(View.VISIBLE);
-                fab.callOnClick();
-            }
-        });
-
-        el = (ViewGroup) findViewById(R.id.editroot);
-        newText.setText("type here");
-        newText.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                final int x = (int) event.getRawX();
-                final int y = (int) event.getRawY();
-                if(event.getPointerCount()>1){
-                    switch (event.getAction()){
-                        case MotionEvent.ACTION_DOWN:
-                            RelativeLayout.LayoutParams plp = (RelativeLayout.LayoutParams) v.getLayoutParams();
-                            xd = plp.leftMargin;
-                            yd = plp.topMargin;
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) v.getLayoutParams();
-                            p.leftMargin = x - xd;
-                            p.topMargin = y - yd;
-                            p.bottomMargin = y;
-                            p.rightMargin = x;
-
-                            v.setLayoutParams(p);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else{
-                    v.requestFocus();
-                }
-                el.invalidate();
-                return true;
-            }
-        });
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -280,15 +242,6 @@ public class menu extends AppCompatActivity
             }
         });
         /*
-         * Clear Button
-         */
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-        /*
          * Record Audio Button
          */
         fab2.setOnClickListener(new View.OnClickListener() {
@@ -296,6 +249,10 @@ public class menu extends AppCompatActivity
             @Override
             public void onClick(View v) {
 
+                    if(vrecording){
+                        Toast.makeText(context, "Please stop screen capture before starting to record audio", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     String[] perms = new String[2];
                     if(ContextCompat.checkSelfPermission(menu.this,android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                         perms[0] = android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -354,6 +311,10 @@ public class menu extends AppCompatActivity
         fab3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(recording){//if audio recording, stop it
+                    Toast.makeText(context, "Please stop recording audio before starting screen capture", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 //if We have permission to write to external storage
                 String[] perms = new String[2];
                 if(ContextCompat.checkSelfPermission(menu.this,android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -382,6 +343,7 @@ public class menu extends AppCompatActivity
                         }
                     }
                 }
+
 
                 if (fab3.getTag().equals("@string/vidle")) {
 
@@ -425,10 +387,7 @@ public class menu extends AppCompatActivity
 
             this.doubleBackToExitPressedOnce = true;
             Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-            EditText ed = (EditText) findViewById(R.id.editText);
-            if(ed.hasFocus()){
-                ed.clearFocus();
-            }
+
             new Handler().postDelayed(new Runnable() {
 
                 @Override
@@ -648,10 +607,12 @@ public class menu extends AppCompatActivity
             e.printStackTrace();
         }
         audioRecorder.start();
+        recording = true;
     }
 
     private void stopRecordingAudio(){
         audioRecorder.stop();
+        recording = false;
         audioRecorder.reset();
     }
 
@@ -665,6 +626,7 @@ public class menu extends AppCompatActivity
             return;
         }
         videoRecorder.start();
+        vrecording = true;
     }
 
     /**
@@ -675,6 +637,7 @@ public class menu extends AppCompatActivity
         public void onStop() {
             if (fab3.getTag().equals("@string/vRecord")) {
                 videoRecorder.stop();
+                vrecording = false;
                 videoRecorder.reset();
             }
             videoP = null;
@@ -691,6 +654,7 @@ public class menu extends AppCompatActivity
             return;
         }
         videoRecorder.stop();
+        vrecording = false;
         videoRecorder.reset();
         videoVD.release();
         destroyMediaProjection();
@@ -719,6 +683,7 @@ public class menu extends AppCompatActivity
         videoVD = videoP.createVirtualDisplay("Main", DISPLAY_WIDTH, DISPLAY_HEIGHT, screenDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, videoRecorder.getSurface(), null, null);
         videoRecorder.start();
+        vrecording = true;
     }
 
     /**

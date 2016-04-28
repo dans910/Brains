@@ -17,6 +17,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -48,7 +50,10 @@ public class micControls extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mic_controls);
 
+        selectMedia();
+    }
 
+    private void selectMedia(){
         TextView a = new TextView(this);
         a.setText("Audio: Press to Play, Long Press to Delete");
         TextView b = new TextView(this);
@@ -168,7 +173,6 @@ public class micControls extends AppCompatActivity {
                 return false;
             }
         });
-
         audioList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -181,14 +185,12 @@ public class micControls extends AppCompatActivity {
         videoList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //final String deleteFilev = (String) videoList.getItemAtPosition(position);
-                //String filev = videoDirectory + "/" + deleteFilev;
-                //playAudio(deleteFilev,filev);
+                final String deleteFilev = (String) videoList.getItemAtPosition(position);
+                String filev = videoDirectory + "/" + deleteFilev;
+
+                playVideo(deleteFilev,filev);
             }
         });
-
-
-
     }
 
     public void playAudio(String aD, String f){
@@ -197,6 +199,19 @@ public class micControls extends AppCompatActivity {
             playedmedia = true;
             playMedia.setScreenOnWhilePlaying(true);
             playMedia.setLooping(false);
+
+            playMedia.start();
+        }
+
+    }
+
+    public void playVideo(String aD, String f){
+        if(!aD.equals("No Videos...")){
+            playMedia = MediaPlayer.create(this, Uri.parse(f));
+            playedmedia = true;
+            playMedia.setScreenOnWhilePlaying(true);
+            playMedia.setLooping(false);
+
             playMedia.start();
         }
 
