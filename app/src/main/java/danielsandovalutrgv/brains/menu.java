@@ -284,13 +284,14 @@ public class menu extends AppCompatActivity
                     ///////////////////////////////////////////////////////
 
                     if(fab2.getTag().toString().equals("@string/aIdle")){
-
+                        recording = false;
                         fab2.setTag("@string/startArec");
                         fab2.setColorFilter(Color.GREEN);
                         Toast.makeText(context, "Press again to start recording audio", Toast.LENGTH_SHORT).show();
                     }
                     else if(fab2.getTag().toString().equals("@string/startArec")){
                         startRecordingAudio();
+                        recording = true;
                         fab2.setImageResource(R.drawable.ic_stop);
                         fab2.setColorFilter(Color.RED);
                         fab2.setTag("@string/stopArec");
@@ -298,6 +299,7 @@ public class menu extends AppCompatActivity
                     }
                     else if(fab2.getTag().toString().equals("@string/stopArec")){
                         stopRecordingAudio();
+                        recording = false;
                         fab2.setImageResource(R.drawable.ic_mic);
                         fab2.clearColorFilter();
                         fab2.setTag("@string/aIdle");
@@ -346,7 +348,7 @@ public class menu extends AppCompatActivity
 
 
                 if (fab3.getTag().equals("@string/vidle")) {
-
+                    vrecording = false;
                     fab3.setImageResource(R.drawable.ic_play);
                     fab3.setColorFilter(Color.GREEN);
                     fab3.setTag("@string/vRecord");
@@ -358,7 +360,7 @@ public class menu extends AppCompatActivity
                     fab3.setImageResource(R.drawable.ic_stop);
                     fab3.setColorFilter(Color.RED);
                     fab3.setTag("@string/vStop");
-                    recording = true;
+                    vrecording = true;
                     Toast.makeText(context, "Press Stop to stop Recording Screen", Toast.LENGTH_SHORT).show();
                 } else if (fab3.getTag().equals("@string/vStop")) {
                     fab3.setImageResource(R.drawable.ic_play);
@@ -366,7 +368,7 @@ public class menu extends AppCompatActivity
                     fab3.clearColorFilter();
 
                     stopScreenCapture();
-                    recording = false;
+                    vrecording = false;
                     Toast.makeText(context, "Stopped Recording", Toast.LENGTH_SHORT).show();
                 }
             }
