@@ -33,6 +33,7 @@ import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -375,6 +376,7 @@ public class menu extends AppCompatActivity
             @Override
             public void onClick(View v) {
 
+                textButton.callOnClick();
                 fab.callOnClick();
 
             }
@@ -411,6 +413,33 @@ public class menu extends AppCompatActivity
                 });
 
                 dialog.show();
+            }
+        });
+
+        textButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(
+                        CoordinatorLayout.LayoutParams.WRAP_CONTENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT);
+
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_MOVE:
+                        layoutParams.topMargin = (int) event.getRawY() - v.getHeight();
+                        layoutParams.leftMargin = (int) event.getRawX() - (v.getWidth() / 2);
+                        v.setLayoutParams(layoutParams);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        layoutParams.topMargin = (int) event.getRawY() - v.getHeight();
+                        layoutParams.leftMargin = (int) event.getRawX() - (v.getWidth() / 2);
+                        v.setLayoutParams(layoutParams);
+                        break;
+                    case MotionEvent.ACTION_DOWN:
+                        v.setLayoutParams(layoutParams);
+                    default:
+                        break;
+                }
+                return false;
             }
         });
     }
