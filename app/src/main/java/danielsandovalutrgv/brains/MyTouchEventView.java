@@ -24,7 +24,6 @@ import android.graphics.Path;
 import android.support.design.widget.FloatingActionButton;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 
 import java.util.Random;
 
@@ -34,6 +33,10 @@ public class MyTouchEventView extends View {
     public Path path = new Path();
     public Paint circlePaint = new Paint();
     public Path circlePath = new Path();
+
+    public MyTouchEventView(Context context){
+        super(context);
+    }
 
     public MyTouchEventView(Context context, FloatingActionButton buttonReset/*, Button buttonRandomColor*/) {
         super(context);
@@ -139,3 +142,4 @@ public class MyTouchEventView extends View {
 
     }
 }
+

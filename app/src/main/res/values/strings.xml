@@ -108,4 +108,7 @@
     <string name="aIdle">aIdle</string>
     <string name="startArec">startaudiorecording</string>
     <string name="stopArec">stopaudiorecording</string>
+    <string name="newT">Type Here</string>
+    <string name="audioHeader">Audio: Press to Play, Long Press to Delete</string>
+    <string name="videoHeader">Video: Press to Play, Long Press to Delete</string>
 </resources>

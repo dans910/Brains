@@ -1,68 +1,50 @@
 package danielsandovalutrgv.brains;
 
 import android.annotation.TargetApi;
-import android.media.MediaRecorder;
-import android.media.projection.MediaProjection;
-import android.media.projection.MediaProjection.Callback;
-import android.media.projection.MediaProjectionManager;
-import android.net.Uri;
-import android.app.Dialog;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
-import android.graphics.Color;
+import android.media.MediaRecorder;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.provider.Settings;
-import android.support.design.widget.CoordinatorLayout;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.SparseIntArray;
-import android.view.SurfaceView;
-import android.widget.ToggleButton;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.os.EnvironmentCompat;
-import android.support.v7.app.AlertDialog;
-import android.view.DragEvent;
-import android.view.MotionEvent;
-import android.view.Surface;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.SparseIntArray;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
+import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewPropertyAnimator;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-import android.view.DragEvent;
-import android.view.View.DragShadowBuilder;
-import android.view.View.OnDragListener;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Manifest;
 
 public class menu extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -85,7 +67,7 @@ public class menu extends AppCompatActivity
     final private int REQUEST_VIDEO = 4;
     private boolean continueRecordS;
     private boolean continueRecordA;
-    private boolean recgranted, vidgranted;
+    private boolean vidgranted;
     private View rec;
     private RelativeLayout editLayout;
     private int xd, yd;
@@ -101,6 +83,12 @@ public class menu extends AppCompatActivity
     private FloatingActionButton fab2;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private Surface thesurf;
+    private CoordinatorLayout coordinatorLayout;
+    private CoordinatorLayout.LayoutParams params;
+    private RelativeLayout relativeLayout;
+    private RelativeLayout.LayoutParams params1;
+    private Button textButton;
+    private EditText editText;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -117,17 +105,22 @@ public class menu extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        params = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT);
+        params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+
         fab3 = (FloatingActionButton) findViewById(R.id.fab3);
         fab4 = (FloatingActionButton) findViewById(R.id.fab4);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab1 = (FloatingActionButton) findViewById(R.id.fab1);
         fab2 = (FloatingActionButton) findViewById(R.id.fab2);
+        textButton = (Button) findViewById(R.id.textButton);
 
         switchOnOff(false);
         buttonDescriptions();
         buttonActions();
-        fab3.setTag("@string/vidle");
-        fab2.setTag("@string/aIdle");
+        fab3.setTag(R.string.vidle);
+        fab2.setTag(R.string.aIdle);
         fab1.setColorFilter(Color.RED);
 
         //Screen Capture variables
@@ -139,16 +132,16 @@ public class menu extends AppCompatActivity
         audioRecorder = new MediaRecorder();
         videoPM = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
+
         //For Drawing
-        CoordinatorLayout relativeLayout;
-        CoordinatorLayout.LayoutParams params;
-        relativeLayout = (CoordinatorLayout) findViewById(R.id.root);
-        params = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT);
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.root);
+        relativeLayout  = (RelativeLayout) findViewById(R.id.editRoot);
+
+
         MyTouchEventView touch = new MyTouchEventView(this, fab1);
         touch.setLayoutParams(params);
-        relativeLayout.addView(touch);
-
-
+        assert coordinatorLayout != null;
+        coordinatorLayout.addView(touch);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -157,13 +150,14 @@ public class menu extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
     }
 
     /**
-     * This method is used to open the micControls activity.
+     * This method open the Media files activity
      * This method creates an intent and will be called when a button is pressed.
-     * @param view
+     * @param view ,View containing file
      */
     public void recordAudio(View view){
 
@@ -173,7 +167,7 @@ public class menu extends AppCompatActivity
 
     /**
      * This method toggles the buttons' visibility.
-     * @param status
+     * @param status, boolean to check whether the button has been clicked
      */
     private void switchOnOff(boolean status){
         if(!status){
@@ -282,27 +276,27 @@ public class menu extends AppCompatActivity
                     }
 
                     ///////////////////////////////////////////////////////
-
-                    if(fab2.getTag().toString().equals("@string/aIdle")){
+                Toast.makeText(context, "Please stop screen capture before starting to record audio", Toast.LENGTH_SHORT).show();
+                    if(fab2.getTag().equals(R.string.aIdle)){
                         recording = false;
-                        fab2.setTag("@string/startArec");
+                        fab2.setTag(R.string.startArec);
                         fab2.setColorFilter(Color.GREEN);
                         Toast.makeText(context, "Press again to start recording audio", Toast.LENGTH_SHORT).show();
                     }
-                    else if(fab2.getTag().toString().equals("@string/startArec")){
+                    else if(fab2.getTag().equals(R.string.startArec)){
                         startRecordingAudio();
                         recording = true;
                         fab2.setImageResource(R.drawable.ic_stop);
                         fab2.setColorFilter(Color.RED);
-                        fab2.setTag("@string/stopArec");
+                        fab2.setTag(R.string.stopArec);
                         Toast.makeText(context, "Press Stop to stop recording audio", Toast.LENGTH_SHORT).show();
                     }
-                    else if(fab2.getTag().toString().equals("@string/stopArec")){
+                    else if(fab2.getTag().equals(R.string.stopArec)){
                         stopRecordingAudio();
                         recording = false;
                         fab2.setImageResource(R.drawable.ic_mic);
                         fab2.clearColorFilter();
-                        fab2.setTag("@string/aIdle");
+                        fab2.setTag(R.string.aIdle);
                         Toast.makeText(context, "Stopped Recording", Toast.LENGTH_SHORT).show();
                     }
             }
@@ -347,24 +341,26 @@ public class menu extends AppCompatActivity
                 }
 
 
-                if (fab3.getTag().equals("@string/vidle")) {
+                if (fab3.getTag().equals(R.string.vidle)) {
                     vrecording = false;
                     fab3.setImageResource(R.drawable.ic_play);
                     fab3.setColorFilter(Color.GREEN);
-                    fab3.setTag("@string/vRecord");
+                    fab3.setTag(R.string.vRecord);
                     Toast.makeText(context, "Press Play to Record Screen", Toast.LENGTH_SHORT).show();
-                } else if (fab3.getTag().equals("@string/vRecord")) {
+                } else if (fab3.getTag().equals(R.string.vRecord)) {
 
                     initiateScreenCapture();
                     startScreenCapture();
                     fab3.setImageResource(R.drawable.ic_stop);
                     fab3.setColorFilter(Color.RED);
-                    fab3.setTag("@string/vStop");
+                    fab3.setTag(R.string.vStop);
                     vrecording = true;
                     Toast.makeText(context, "Press Stop to stop Recording Screen", Toast.LENGTH_SHORT).show();
-                } else if (fab3.getTag().equals("@string/vStop")) {
+
+
+                } else if (fab3.getTag().equals(R.string.vStop)) {
                     fab3.setImageResource(R.drawable.ic_play);
-                    fab3.setTag("@string/vidle");
+                    fab3.setTag(R.string.vidle);
                     fab3.clearColorFilter();
 
                     stopScreenCapture();
@@ -373,12 +369,58 @@ public class menu extends AppCompatActivity
                 }
             }
         });
+
+
+        fab4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                fab.callOnClick();
+
+            }
+        });
+
+        textButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog dialog = new AlertDialog.Builder(context).create();
+                dialog.setTitle("Edit Text");
+
+                editText = new EditText(context);
+                editText.setText(textButton.getText());
+                editText.setWidth(CoordinatorLayout.LayoutParams.WRAP_CONTENT);
+                dialog.setView(editText);
+
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Confirm", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        textButton.setText(editText.getText());
+                    }
+                });
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Clear", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        textButton.setText("");
+                    }
+                });
+
+                dialog.show();
+            }
+        });
     }
+
 
     boolean doubleBackToExitPressedOnce = false;
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        assert drawer != null;
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -400,12 +442,7 @@ public class menu extends AppCompatActivity
         }
     }
 
-    /**
-     * This method handles permissions.
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
-     */
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
@@ -524,6 +561,7 @@ public class menu extends AppCompatActivity
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        assert drawer != null;
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -672,9 +710,11 @@ public class menu extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode != REQUEST_CODE) {
+            vidgranted = false;
             return;
         }
         if (resultCode != RESULT_OK) {
+            vidgranted = false;
             Toast.makeText(this,
                     "Screen Cast Permission Denied", Toast.LENGTH_SHORT).show();
             return;
@@ -686,6 +726,7 @@ public class menu extends AppCompatActivity
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, videoRecorder.getSurface(), null, null);
         videoRecorder.start();
         vrecording = true;
+        vidgranted = true;
     }
 
     /**
@@ -750,7 +791,7 @@ public class menu extends AppCompatActivity
 
     /**
      * This method returns a list of the files in the path given.
-     * @param path
+     * @param path, Path to directory of files to be played.
      * @return
      */
     public ArrayList<String> getFiles(String path){

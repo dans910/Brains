@@ -1,35 +1,20 @@
 package danielsandovalutrgv.brains;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.media.MediaRecorder;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class micControls extends AppCompatActivity {
@@ -40,11 +25,9 @@ public class micControls extends AppCompatActivity {
     private ArrayAdapter<String> adapter, adapterv;
     private ListView audioList, videoList;
     private boolean playedmedia = false;
-    final private int REQUEST_MIC=1;
-    private boolean requsetmic;         //true if permission granted
     final String br = "Brains";
     final private File audioDirectory = new File(Environment.getExternalStorageDirectory()+ "/" +br, "Audio"+ "/" );
-    final private File videoDirectory = new File(Environment.getExternalStorageDirectory()+ "/" +br, "Video" + "/");;
+    final private File videoDirectory = new File(Environment.getExternalStorageDirectory()+ "/" +br, "Video" + "/");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,15 +38,15 @@ public class micControls extends AppCompatActivity {
 
     private void selectMedia(){
         TextView a = new TextView(this);
-        a.setText("Audio: Press to Play, Long Press to Delete");
+        a.setText(R.string.audioHeader);
         TextView b = new TextView(this);
-        b.setText("Video: Press to Play, Long Press to Delete");
+        b.setText(R.string.videoHeader);
         audioList = (ListView) findViewById(R.id.audioList);
         assert audioList != null;
         videoList = (ListView) findViewById(R.id.videoList);
         assert videoList != null;
-        audioList.addHeaderView(a);
-        videoList.addHeaderView(b);
+        audioList.addHeaderView(a, "audio", false);
+        videoList.addHeaderView(b, "video", false);
 
         files = getFiles(audioDirectory.toString());
         filesv = getFiles(videoDirectory.toString());

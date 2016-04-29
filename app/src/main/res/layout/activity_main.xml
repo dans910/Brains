@@ -95,14 +95,38 @@
         app:backgroundTint="@color/colorPrimary"
         app:rippleColor="@color/colorAccent"
         android:tint="#ffffff" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:text="@string/newT"
+        android:id="@+id/textButton"
+        android:background="@drawable/abc_btn_colored_material" />
+    <!--<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/newT"
+        android:id="@+id/textButton"
+        android:layout_marginTop="@dimen/app_bar_height"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:visibility="gone"
+        android:textSize="@dimen/abc_text_size_medium_material"
+        android:clickable="true" />
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
+        android:clickable="false"
+        android:layout_marginTop="?attr/actionBarSize"
         android:id="@+id/editroot">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Type Here"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
 
-    </RelativeLayout>
-
+    </RelativeLayout>-->
 
 
 </android.support.design.widget.CoordinatorLayout>
