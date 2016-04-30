@@ -2,13 +2,17 @@ package danielsandovalutrgv.brains;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Surface;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -190,12 +194,27 @@ public class micControls extends AppCompatActivity {
 
     public void playVideo(String aD, String f){
         if(!aD.equals("No Videos...")){
-            playMedia = MediaPlayer.create(this, Uri.parse(f));
+
+            //Play audio from video
+            /*playMedia = MediaPlayer.create(this, Uri.parse(f));
             playedmedia = true;
             playMedia.setScreenOnWhilePlaying(true);
             playMedia.setLooping(false);
 
-            playMedia.start();
+
+            playMedia.start();*/
+
+            //Play with external app
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            File file = new File(f);
+
+            MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+            String ext = file.getName().substring(file.getName().indexOf(".") + 1);
+            String type = mimeTypeMap.getMimeTypeFromExtension(ext);
+
+            intent.setDataAndType(Uri.fromFile(file), type);
+            context.startActivity(intent);
         }
 
     }
