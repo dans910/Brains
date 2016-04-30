@@ -35,7 +35,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_input_add"
         android:background="@color/colorPrimary"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorPrimaryLight"
         android:tint="#ffffff"
         android:onClick="sendMessage"
         app:rippleColor="@color/colorAccent"/>
