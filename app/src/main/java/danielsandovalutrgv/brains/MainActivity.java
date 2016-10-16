@@ -20,6 +20,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -34,59 +36,33 @@ public class MainActivity extends AppCompatActivity {
     private Path path = new Path();
     Context context = this;
     private DrawerLayout mDrawerLayout;
+    private WebView initial_web;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.webview);
+        // Enable Javascript
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        final FloatingActionButton fab1 = (FloatingActionButton) findViewById(R.id.fab1);
-        final FloatingActionButton fab2 = (FloatingActionButton) findViewById(R.id.fab2);
-        fab1.hide();
-        fab2.hide();
-        final FloatingActionButton fab3 = (FloatingActionButton) findViewById(R.id.fab3);
-        final FloatingActionButton fab4 = (FloatingActionButton) findViewById(R.id.fab4);
-        fab3.hide();
-        fab4.hide();
-        assert fab!=null;
-        fab.setOnClickListener(new View.OnClickListener() {
+        initial_web = (WebView) findViewById(R.id.collaborate);
+        WebSettings webSettings = initial_web.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        initial_web.loadUrl("https://d3i19bajsqqyn7.cloudfront.net/");
+
+        // disable scroll on touch
+        initial_web.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                if(!fab1.isShown()){
-                    fab1.show();
-                    fab2.show();
-                    fab3.show();
-                    fab4.show();
-                    fab.setImageResource(R.drawable.ic_compact);
-                }
-                else{
-                    fab1.hide();
-                    fab2.hide();
-                    fab3.hide();
-                    fab4.hide();
-                    fab.setImageResource(R.drawable.ic_add);
-                }
-            }
-        });
-
-        fab2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Go to record audio activity
-                sendMessage(v);
-                fab.callOnClick();
-            }
-        });
-
-        fab4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                fab.callOnClick();
+            public boolean onTouch(View v, MotionEvent event) {
+                return (event.getAction() == MotionEvent.ACTION_MOVE);
             }
         });
 
