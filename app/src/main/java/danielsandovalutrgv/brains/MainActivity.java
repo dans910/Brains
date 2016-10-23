@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.PersistableBundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Gravity;
@@ -20,8 +21,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.webview);
         // Enable Javascript
 
@@ -54,31 +64,84 @@ public class MainActivity extends AppCompatActivity {
 
 
         initial_web = (WebView) findViewById(R.id.collaborate);
-        WebSettings webSettings = initial_web.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        initial_web.loadUrl("https://d3i19bajsqqyn7.cloudfront.net/");
+        initial_web.setWebViewClient(new MyWeb());
+        initial_web.setWebChromeClient(new WebChromeClient());
+        initial_web.getSettings().setAllowContentAccess(true);
+        initial_web.getSettings().setAllowFileAccess(true);
+        initial_web.getSettings().setDatabaseEnabled(true);
+        initial_web.getSettings().setDomStorageEnabled(true);
+        initial_web.getSettings().setJavaScriptEnabled(true);
+/*        WebSettings webSettings = initial_web.getSettings();
+        webSettings.setJavaScriptEnabled(true);*/
 
-        // disable scroll on touch
-        initial_web.setOnTouchListener(new View.OnTouchListener() {
+        //Open link
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String togetherLink = intent.getDataString();
+        if(Intent.ACTION_VIEW.equals(action) && togetherLink !=null){
+
+            initial_web.loadUrl(togetherLink);
+        }
+        else{
+            initial_web.loadUrl("https://d3i19bajsqqyn7.cloudfront.net/");
+        }
+
+
+
+        UiChangeListener();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        initial_web.saveState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        initial_web.restoreState(savedInstanceState);
+    }
+
+    public void UiChangeListener()
+    {
+        final View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return (event.getAction() == MotionEvent.ACTION_MOVE);
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    decorView.setSystemUiVisibility(
+                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
             }
         });
-
     }
 
-    /**
-     * This method is used to open the micControls activity.
-     * This method creates an intent and will be called when a button is pressed.
-     * @param view
-     */
-    public void sendMessage(View view){
-
-        Intent intent = new Intent(this, micControls.class);
-        startActivity(intent);
+    private class MyWeb extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            initial_web.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
+    }
 
     @Override
     protected void onStart() {
@@ -142,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    boolean doubleBackToExitPressedOnce = false;
+/*    boolean doubleBackToExitPressedOnce = false;
 
     @Override
     public void onBackPressed() {
@@ -161,5 +224,5 @@ public class MainActivity extends AppCompatActivity {
                 doubleBackToExitPressedOnce=false;
             }
         }, 2000);
-    }
+    }*/
 }

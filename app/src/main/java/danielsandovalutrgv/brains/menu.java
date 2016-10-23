@@ -308,10 +308,10 @@ public class menu extends AppCompatActivity
         fab3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(recording){//if audio recording, stop it
-                    Toast.makeText(context, "Please stop recording audio before starting screen capture", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                //if(recording){//if audio recording, stop it
+                //    Toast.makeText(context, "Please stop recording audio before starting screen capture", Toast.LENGTH_SHORT).show();
+                //    return;
+                //}
                 //if We have permission to write to external storage
                 String[] perms = new String[2];
                 if(ContextCompat.checkSelfPermission(menu.this,android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -574,10 +574,10 @@ public class menu extends AppCompatActivity
         int id = item.getItemId();
         Intent intent;
         if (id == R.id.privateC) {
+
+        } else if (id == R.id.publicC) {
             intent = new Intent(context, MainActivity.class);
             startActivity(intent);
-        } else if (id == R.id.publicC) {
-
         } else if (id == R.id.filesList) {
             intent = new Intent(context, micControls.class);
             startActivity(intent);

@@ -225,7 +225,7 @@ public class micControls extends AppCompatActivity {
         File f = new File(path);
         f.mkdirs();
         File[] file = f.listFiles();
-        if(file.length == 0){
+        if( file == null || file.length == 0){
             return null;
         }
         else{
