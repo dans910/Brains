@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private WebView initial_web;
     private String inviteLink;
+    private int refreshCount=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +108,16 @@ public class MainActivity extends AppCompatActivity {
 
             sendInvite(inviteLink);
         }
+
+        @android.webkit.JavascriptInterface
+        public int retrefreshCount(){
+            return refreshCount;
+        }
+        @android.webkit.JavascriptInterface
+        public void updaterefreshCount(){
+            refreshCount++;
+        }
+
 
 
     }
@@ -228,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent inviteIntent = new Intent();
         inviteIntent.setAction(Intent.ACTION_SEND);
-        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate\n" + newLink);
+        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate!!!!\n" + newLink);
         inviteIntent.setType("text/plain");
         startActivity(inviteIntent);
     }
