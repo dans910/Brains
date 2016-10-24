@@ -586,7 +586,7 @@ public class menu extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
-
+            sendInvite();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -839,6 +839,15 @@ public class menu extends AppCompatActivity
         }
 
         return files;
+    }
+
+    public void sendInvite(){
+
+        Intent inviteIntent = new Intent();
+        inviteIntent.setAction(Intent.ACTION_SEND);
+        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate\n theLink");
+        inviteIntent.setType("text/plain");
+        startActivity(inviteIntent);
     }
 
 }

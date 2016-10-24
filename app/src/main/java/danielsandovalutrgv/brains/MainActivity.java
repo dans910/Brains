@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
     public final static String EXTRA_MESSAGE = "danielsandovalutrgv.brains.MESSAGE";
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     Context context = this;
     private DrawerLayout mDrawerLayout;
     private WebView initial_web;
+    private String inviteLink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +73,7 @@ public class MainActivity extends AppCompatActivity {
         initial_web.getSettings().setDatabaseEnabled(true);
         initial_web.getSettings().setDomStorageEnabled(true);
         initial_web.getSettings().setJavaScriptEnabled(true);
-/*        WebSettings webSettings = initial_web.getSettings();
-        webSettings.setJavaScriptEnabled(true);*/
+        initial_web.addJavascriptInterface(new webAppComm(), "webApp");
 
         //Open link
         Intent intent = getIntent();
@@ -90,7 +91,25 @@ public class MainActivity extends AppCompatActivity {
 
         UiChangeListener();
     }
+    //this object class will be able to be used in android browsers from the javascript in the webview
+    class webAppComm{
 
+        @android.webkit.JavascriptInterface
+        public void sendLinkToApp(String invite){
+            inviteLink = invite;
+        }
+
+        @android.webkit.JavascriptInterface
+        public boolean inApp(){return true;}
+
+        @android.webkit.JavascriptInterface
+        public void sendLink(){
+
+            sendInvite(inviteLink);
+        }
+
+
+    }
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
@@ -205,6 +224,14 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void sendInvite( String newLink ){
+
+        Intent inviteIntent = new Intent();
+        inviteIntent.setAction(Intent.ACTION_SEND);
+        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate\n" + newLink);
+        inviteIntent.setType("text/plain");
+        startActivity(inviteIntent);
+    }
 /*    boolean doubleBackToExitPressedOnce = false;
 
     @Override
