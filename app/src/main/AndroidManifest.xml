@@ -33,7 +33,8 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
-            android:parentActivityName=".menu">
+            android:parentActivityName=".menu"
+            android:hardwareAccelerated="true">
 
             <!-- ATTENTION: This intent was auto-generated. Follow instructions at
       https://g.co/AppIndexing/AndroidStudio to publish your URLs. -->

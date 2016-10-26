@@ -7,21 +7,23 @@
     <WebView
         android:id="@+id/collaborate"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/webBtns">
 
     </WebView>
-<!--
 
     <TableLayout
+        android:id="@+id/webBtns"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_x="2dp"
         android:layout_y="581dp"
         android:gravity="bottom"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:background="@color/colorPrimary">
 
         <TableRow
             android:layout_width="match_parent"
@@ -32,40 +34,43 @@
             android:layout_y="552dp">
 
             <Button
-                android:text="Button"
+                android:text="Pen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/button10"
                 android:layout_weight="0.25"
                 style="@style/Widget.AppCompat.Button.Borderless"
-                android:backgroundTint="@color/colorAccent" />
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@android:color/background_light" />
 
             <Button
-                android:text="Button"
+                android:text="Record"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/button9"
                 android:layout_weight="0.25"
-                style="@style/Widget.AppCompat.Button.Borderless" />
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:textColor="@android:color/background_light" />
 
             <Button
-                android:text="Button"
+                android:text="Clear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/button8"
                 android:layout_weight="0.25"
-                style="@style/Widget.AppCompat.Button.Borderless" />
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:textColor="@android:color/background_light" />
 
             <Button
-                android:text="Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/button7"
-                android:layout_weight="0.25"
-                style="@style/Widget.AppCompat.Button.Borderless" />
+                    android:text="Collab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/button7"
+                    android:layout_weight="0.25"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:textColor="@android:color/background_light" />
         </TableRow>
     </TableLayout>
--->
 
 
 </RelativeLayout>

@@ -111,7 +111,7 @@
     <string name="newT">Type Here</string>
     <string name="audioHeader">Audio: Press to Play, Long Press to Delete</string>
     <string name="videoHeader">Video: Press to Play, Long Press to Delete</string>
-
+    <string name="colorTitle">Select Pen Color:</string>
     <string name="profileName">Profile Name</string>
     <string name="profileStatus">Profile Status</string>
 </resources>

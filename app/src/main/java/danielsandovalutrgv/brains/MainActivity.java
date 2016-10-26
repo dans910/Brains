@@ -1,6 +1,7 @@
 package danielsandovalutrgv.brains;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,7 +10,9 @@ import android.graphics.Path;
 import android.os.PersistableBundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,14 +30,24 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.colorpicker.ColorPickerDialog;
+import com.android.colorpicker.ColorPickerPalette;
+import com.android.colorpicker.ColorPickerSwatch;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import static android.R.attr.numColumns;
+import static android.R.attr.onClick;
+import static android.graphics.Color.rgb;
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class MainActivity extends AppCompatActivity {
     public final static String EXTRA_MESSAGE = "danielsandovalutrgv.brains.MESSAGE";
@@ -45,11 +58,17 @@ public class MainActivity extends AppCompatActivity {
     private WebView initial_web;
     private String inviteLink;
     private int refreshCount=0;
+    private Button clearBtn;
+    private Button collabBtn;
+    private Button penBtn;
+    private Button recordBtn;
+    private int[] colors;
+    private int selectedColor;
+    private String tag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -72,9 +91,83 @@ public class MainActivity extends AppCompatActivity {
         initial_web.getSettings().setAllowContentAccess(true);
         initial_web.getSettings().setAllowFileAccess(true);
         initial_web.getSettings().setDatabaseEnabled(true);
+        initial_web.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         initial_web.getSettings().setDomStorageEnabled(true);
         initial_web.getSettings().setJavaScriptEnabled(true);
         initial_web.addJavascriptInterface(new webAppComm(), "webApp");
+        //Buttons
+        clearBtn = (Button) findViewById(R.id.button8);
+        recordBtn = (Button) findViewById(R.id.button9);
+        penBtn = (Button) findViewById(R.id.button10);
+        collabBtn = (Button) findViewById(R.id.button7);
+        //color dialog color array for dialog
+
+        colors = new int[6];
+        initializeColor();
+        selectedColor = colors[4];
+
+        final ColorPickerDialog colorPickerDialog = new ColorPickerDialog();
+        colorPickerDialog.initialize(
+                R.string.color_picker_default_title, colors, selectedColor, 3, colors.length);
+        LayoutInflater layoutInflater = LayoutInflater.from(context);
+        ColorPickerPalette colorPickerPalette = (ColorPickerPalette) layoutInflater
+            .inflate(R.layout.colorpicker, null);
+        colorPickerPalette.init(colors.length, 3, new ColorPickerSwatch.OnColorSelectedListener() {
+            @Override
+            public void onColorSelected(int color) {
+                if (color == Color.parseColor("#5bc0de")) {
+                    initial_web.loadUrl("javascript: setColor('#5bc0de');" +
+                            "changeMouse();");
+                    Toast.makeText(context, "BLUE", LENGTH_SHORT).show();
+                }
+                else if(color == Color.parseColor("#5cb85c")){
+                    initial_web.loadUrl("javascript: setColor('#5cb85c');" +
+                            "changeMouse();");
+                    Toast.makeText(context, "GREEN", LENGTH_SHORT).show();
+                }
+                else if(color == Color.parseColor("#f0ad4e")) {
+                    initial_web.loadUrl("javascript: setColor('#f0ad4e');" +
+                            "changeMouse();");
+                    Toast.makeText(context, "ORANGE", LENGTH_SHORT).show();
+                }
+                else if(color == Color.parseColor("#d9534f")) {
+                    initial_web.loadUrl("javascript: setColor('#d9534f');" +
+                            "changeMouse();");
+                    Toast.makeText(context, "RED", LENGTH_SHORT).show();
+                }
+                else if(color == Color.parseColor("#202020")) {
+                    initial_web.loadUrl("javascript: setColor('#202020');" +
+                            "changeMouse();");
+                    Toast.makeText(context, "BLACK", LENGTH_SHORT).show();
+                }
+                else if(color == Color.WHITE){
+                    initial_web.loadUrl("javascript: eraser()" +
+                            "changeMouse();");
+                    Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
+                }
+                else{}
+            }
+        });
+        colorPickerPalette.drawPalette(colors, selectedColor);
+
+        final AlertDialog alert = new AlertDialog.Builder(this).setTitle(R.string.color_picker_default_title)
+                .setPositiveButton("+", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        initial_web.loadUrl("javascript: setSize(context.lineWidth+3);" +
+                                "changeMouse();");
+                    }
+                })
+                .setNegativeButton("-", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        initial_web.loadUrl("javascript: if(context.lineWidth > 3){" +
+                                "setSize(context.lineWidth-3); }" +
+                                "changeMouse();");
+                    }
+                })
+                .setView(colorPickerPalette)
+                .create();
 
         //Open link
         Intent intent = getIntent();
@@ -88,10 +181,83 @@ public class MainActivity extends AppCompatActivity {
             initial_web.loadUrl("https://d3i19bajsqqyn7.cloudfront.net/");
         }
 
+        clearBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initial_web.loadUrl("javascript: clear(true);");//("javascript:(function(){document.getElementById('clear').click();})()");
+            }
+        });
+
+        collabBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initial_web.loadUrl("javascript: TogetherJS(this);" +
+                        "setColor(TogetherJS.require('peers').Self.color);" +
+                        "    changeMouse();");//(function(){document.getElementById('collaboratebtn').click();})()");
+            }
+        });
+
+        recordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.show();
+            }
+        });
+
+        penBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String cmd = "";
+                //initial_web.loadUrl("javascript:(function(){document.getElementById('blue').click();})()");
+                colorPickerDialog.show(getFragmentManager(), tag);
+                colorPickerDialog.setOnColorSelectedListener(new ColorPickerSwatch.OnColorSelectedListener() {
+                    @Override
+                    public void onColorSelected(int color) {
+                        if (color == Color.parseColor("#5bc0de")) {
+                            initial_web.loadUrl("javascript: setColor('#5bc0de');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "BLUE", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#5cb85c")){
+                            initial_web.loadUrl("javascript: setColor('#5cb85c');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "GREEN", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#f0ad4e")) {
+                            initial_web.loadUrl("javascript: setColor('#f0ad4e');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "ORANGE", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#d9534f")) {
+                            initial_web.loadUrl("javascript: setColor('#d9534f');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "RED", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#202020")) {
+                            initial_web.loadUrl("javascript: setColor('#202020');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "BLACK", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.WHITE){
+                            initial_web.loadUrl("javascript: eraser()" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
+                        }
+                        else{}
+
+                    }
+                });
+                //initial_web.loadUrl("javascript:");
+
+            }
+        });
+
 
 
         UiChangeListener();
     }
+
+
     //this object class will be able to be used in android browsers from the javascript in the webview
     class webAppComm{
 
@@ -109,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
             sendInvite(inviteLink);
         }
 
+
         @android.webkit.JavascriptInterface
         public int retrefreshCount(){
             return refreshCount;
@@ -118,9 +285,15 @@ public class MainActivity extends AppCompatActivity {
             refreshCount++;
         }
 
+        @android.webkit.JavascriptInterface
+        public void isInApp(){
+            Toast.makeText(context, "is in app", LENGTH_SHORT).show();
+
+        }
 
 
     }
+
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
@@ -150,6 +323,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void initializeColor() {
+        colors[0] = Color.parseColor("#5bc0de");
+        colors[1] = Color.parseColor("#5cb85c");
+        colors[2] = Color.parseColor("#f0ad4e");
+        colors[3] = Color.parseColor("#d9534f");
+        colors[4] = Color.parseColor("#202020");
+        colors[5] = Color.WHITE;
     }
 
     private class MyWeb extends WebViewClient {
