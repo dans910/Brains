@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         public void sendLink(){
 
             sendInvite(inviteLink);
-        }
+        } 
 
 
         @android.webkit.JavascriptInterface
