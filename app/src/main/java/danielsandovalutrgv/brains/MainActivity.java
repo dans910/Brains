@@ -42,6 +42,7 @@ import com.android.colorpicker.ColorPickerSwatch;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import static android.R.attr.numColumns;
@@ -65,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
     private int[] colors;
     private int selectedColor;
     private String tag;
+    private static final String CHARACTERS =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    private static final int RLENGTH = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,11 +150,12 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
                 }
                 else{}
+                selectedColor = color;
             }
         });
         colorPickerPalette.drawPalette(colors, selectedColor);
 
-        final AlertDialog alert = new AlertDialog.Builder(this).setTitle(R.string.color_picker_default_title)
+        final AlertDialog alert = new AlertDialog.Builder(this, R.style.MyDialogTheme).setTitle(R.string.color_picker_default_title)
                 .setPositiveButton("+", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -158,11 +163,12 @@ public class MainActivity extends AppCompatActivity {
                                 "changeMouse();");
                     }
                 })
-                .setNegativeButton("-", new DialogInterface.OnClickListener() {
+                .setNeutralButton("-", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        initial_web.loadUrl("javascript: if(context.lineWidth > 3){" +
-                                "setSize(context.lineWidth-3); }" +
+                        initial_web.loadUrl("javascript: if (context.lineWidth > 3) {" +
+                                "      setSize(context.lineWidth-3);" +
+                                "    }" +
                                 "changeMouse();");
                     }
                 })
@@ -178,8 +184,11 @@ public class MainActivity extends AppCompatActivity {
             initial_web.loadUrl(togetherLink);
         }
         else{
-            initial_web.loadUrl("https://d3i19bajsqqyn7.cloudfront.net/");
+            initial_web.loadUrl("http://mindcollab.me/" + generateRandomString());//https://d3i19bajsqqyn7.cloudfront.net/");
         }
+
+/*        initial_web.loadUrl("javascript: (function(){ var child = document.getElementById(\"top-group\");" +
+                "document.body.removeChild(child);})()");*/
 
         clearBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -247,11 +256,9 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-                //initial_web.loadUrl("javascript:");
 
             }
         });
-
 
 
         UiChangeListener();
@@ -323,6 +330,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * generate random string to use with new room
+     */
+    public String generateRandomString(){
+        StringBuffer str = new StringBuffer();
+        for(int i=0; i<RLENGTH; i++){
+            int rnd = getRandomNumber();
+            char c = CHARACTERS.charAt(rnd);
+            str.append(c);
+        }
+        return str.toString();
+    }
+
+    /**
+     * get random int
+     */
+    public int getRandomNumber(){
+        int randy=0;
+        Random rndgen = new Random();
+        randy = rndgen.nextInt(CHARACTERS.length());
+        if(randy -1 ==-1){
+            return  randy;
+        }
+        else{
+            return  randy -1;
+        }
     }
 
     public void initializeColor() {

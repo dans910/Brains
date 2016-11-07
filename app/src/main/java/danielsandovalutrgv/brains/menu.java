@@ -81,7 +81,7 @@ public class menu extends AppCompatActivity
     private FloatingActionButton fab4;
     private FloatingActionButton fab;
     private FloatingActionButton fab1;
-    private FloatingActionButton fab2;
+    public FloatingActionButton fab2;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private Surface thesurf;
     private CoordinatorLayout coordinatorLayout;

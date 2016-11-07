@@ -46,8 +46,8 @@
                 <!-- ATTENTION: This data URL was auto-generated. We recommend that you use the HTTP scheme.
                   TODO: Change the host or pathPrefix as necessary. -->
                 <data
-                    android:scheme="https"
-                    android:host="d3i19bajsqqyn7.cloudfront.net"/>
+                    android:scheme="http"
+                    android:host="mindcollab.me"/>
             </intent-filter>
         </activity>
         <activity
