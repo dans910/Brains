@@ -20,14 +20,6 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="74dp"
-        app:srcCompat="@drawable/brain_icon"
-        android:id="@+id/imageView2"
-        android:maxHeight="10dp"
-        android:minHeight="65dp" />
-
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
@@ -38,6 +30,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="74dp"
+                app:srcCompat="@drawable/brain_icon"
+                android:id="@+id/imageView2"
+                android:maxHeight="10dp"
+                android:minHeight="65dp" />
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -98,6 +98,16 @@
                     style="@android:style/Widget.Material.Light.Button.Borderless.Colored" />
             </LinearLayout>
 
+            <com.google.android.gms.common.SignInButton
+                android:id="@+id/sign_in_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
         </LinearLayout>
+
+
     </ScrollView>
+
+
+
 </LinearLayout>
