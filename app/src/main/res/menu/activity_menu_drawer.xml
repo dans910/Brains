@@ -23,13 +23,13 @@
     <item android:title="Collaborate">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Join" />
-            <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
                 android:title="Invite" />
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_power_settings_new_black_24dp"
+                android:title="Sign Out" />
         </menu>
     </item>
 
