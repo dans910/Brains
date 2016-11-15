@@ -181,10 +181,10 @@ public class MainActivity extends AppCompatActivity {
         String togetherLink = intent.getDataString();
         if(Intent.ACTION_VIEW.equals(action) && togetherLink !=null){
 
-            initial_web.loadUrl(togetherLink);
+            initial_web.loadUrl("http://mindcollab.me/app/" + togetherLink.substring(togetherLink.length()-10));
         }
         else{
-            initial_web.loadUrl("http://mindcollab.me/" + generateRandomString());//https://d3i19bajsqqyn7.cloudfront.net/");
+            initial_web.loadUrl("http://mindcollab.me/app/" + generateRandomString());//https://d3i19bajsqqyn7.cloudfront.net/");
         }
 
 /*        initial_web.loadUrl("javascript: (function(){ var child = document.getElementById(\"top-group\");" +
@@ -200,9 +200,7 @@ public class MainActivity extends AppCompatActivity {
         collabBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                initial_web.loadUrl("javascript: TogetherJS(this);" +
-                        "setColor(TogetherJS.require('peers').Self.color);" +
-                        "    changeMouse();");//(function(){document.getElementById('collaboratebtn').click();})()");
+                initial_web.loadUrl("javascript: (function(){toggleDialog();})()");
             }
         });
 
@@ -217,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String cmd = "";
-                //initial_web.loadUrl("javascript:(function(){document.getElementById('blue').click();})()");
                 colorPickerDialog.show(getFragmentManager(), tag);
                 colorPickerDialog.setOnColorSelectedListener(new ColorPickerSwatch.OnColorSelectedListener() {
                     @Override
@@ -280,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
         public void sendLink(){
 
             sendInvite(inviteLink);
-        } 
+        }
 
 
         @android.webkit.JavascriptInterface
