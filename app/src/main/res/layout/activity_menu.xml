@@ -6,13 +6,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:theme="@style/AppTheme.NoActionBar"
+    android:theme="@style/AppTheme"
     tools:openDrawer="start">
 
     <include
         layout="@layout/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <FrameLayout
+        android:id="@+id/mainFrame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></FrameLayout>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
@@ -22,5 +27,4 @@
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_menu"
         app:menu="@menu/activity_menu_drawer" />
-
 </android.support.v4.widget.DrawerLayout>

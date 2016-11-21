@@ -7,13 +7,15 @@
     <WebView
         android:id="@+id/collaborate"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/webBtns">
+        android:layout_above="@+id/webBtns"
+        android:paddingTop="?attr/actionBarSize">
 
     </WebView>
 
+<!--
     <TableLayout
         android:id="@+id/webBtns"
         android:layout_width="match_parent"
@@ -71,6 +73,7 @@
                     android:textColor="@android:color/background_light" />
         </TableRow>
     </TableLayout>
+-->
 
 
 </RelativeLayout>

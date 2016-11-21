@@ -7,10 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.media.session.PlaybackState;
 import android.os.PersistableBundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -39,12 +41,20 @@ import android.widget.Toast;
 import com.android.colorpicker.ColorPickerDialog;
 import com.android.colorpicker.ColorPickerPalette;
 import com.android.colorpicker.ColorPickerSwatch;
+import com.google.android.gms.cast.Cast;
+import com.google.android.gms.cast.CastDevice;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
+import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.SessionManagerListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import static android.R.attr.dial;
 import static android.R.attr.numColumns;
 import static android.R.attr.onClick;
 import static android.graphics.Color.rgb;
@@ -59,16 +69,21 @@ public class MainActivity extends AppCompatActivity {
     private WebView initial_web;
     private String inviteLink;
     private int refreshCount=0;
-    private Button clearBtn;
-    private Button collabBtn;
-    private Button penBtn;
-    private Button recordBtn;
     private int[] colors;
     private int selectedColor;
     private String tag;
     private static final String CHARACTERS =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     private static final int RLENGTH = 10;
+    private String UserEmail;
+    final ColorPickerDialog colorPickerDialog = new ColorPickerDialog();
+    private int penSize = 3;
+    private CastContext mCC;
+    private MenuItem mRI;
+    private CastSession mCastSession;
+    private SessionManagerListener<CastSession> mSessionManagerListener;
+    private String RoomUrl;
+    private messageChannel mmC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +95,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.webview);
         // Enable Javascript
 
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        UiChangeListener();
+
+
 
 
         initial_web = (WebView) findViewById(R.id.collaborate);
@@ -99,18 +110,14 @@ public class MainActivity extends AppCompatActivity {
         initial_web.getSettings().setDomStorageEnabled(true);
         initial_web.getSettings().setJavaScriptEnabled(true);
         initial_web.addJavascriptInterface(new webAppComm(), "webApp");
-        //Buttons
-        clearBtn = (Button) findViewById(R.id.button8);
-        recordBtn = (Button) findViewById(R.id.button9);
-        penBtn = (Button) findViewById(R.id.button10);
-        collabBtn = (Button) findViewById(R.id.button7);
+
         //color dialog color array for dialog
 
         colors = new int[6];
         initializeColor();
         selectedColor = colors[4];
 
-        final ColorPickerDialog colorPickerDialog = new ColorPickerDialog();
+
         colorPickerDialog.initialize(
                 R.string.color_picker_default_title, colors, selectedColor, 3, colors.length);
         LayoutInflater layoutInflater = LayoutInflater.from(context);
@@ -145,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(context, "BLACK", LENGTH_SHORT).show();
                 }
                 else if(color == Color.WHITE){
-                    initial_web.loadUrl("javascript: eraser()" +
+                    initial_web.loadUrl("javascript: eraser();" +
                             "changeMouse();");
                     Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
                 }
@@ -155,26 +162,6 @@ public class MainActivity extends AppCompatActivity {
         });
         colorPickerPalette.drawPalette(colors, selectedColor);
 
-        final AlertDialog alert = new AlertDialog.Builder(this, R.style.MyDialogTheme).setTitle(R.string.color_picker_default_title)
-                .setPositiveButton("+", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        initial_web.loadUrl("javascript: setSize(context.lineWidth+3);" +
-                                "changeMouse();");
-                    }
-                })
-                .setNeutralButton("-", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        initial_web.loadUrl("javascript: if (context.lineWidth > 3) {" +
-                                "      setSize(context.lineWidth-3);" +
-                                "    }" +
-                                "changeMouse();");
-                    }
-                })
-                .setView(colorPickerPalette)
-                .create();
-
         //Open link
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -182,83 +169,23 @@ public class MainActivity extends AppCompatActivity {
         if(Intent.ACTION_VIEW.equals(action) && togetherLink !=null){
 
             initial_web.loadUrl("http://mindcollab.me/app/" + togetherLink.substring(togetherLink.length()-10));
+            RoomUrl = togetherLink.substring(togetherLink.length()-10);
         }
         else{
-            initial_web.loadUrl("http://mindcollab.me/app/" + generateRandomString());//https://d3i19bajsqqyn7.cloudfront.net/");
+            Bundle b = getIntent().getExtras();
+            UserEmail = b.getString("email");
+            initial_web.loadUrl("http://mindcollab.me/app/" + b.getString("room"));
+            RoomUrl = b.getString("room");
         }
+        Toast.makeText(context, RoomUrl, LENGTH_SHORT).show();
 
-/*        initial_web.loadUrl("javascript: (function(){ var child = document.getElementById(\"top-group\");" +
-                "document.body.removeChild(child);})()");*/
+        setupCastListener();
 
-        clearBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                initial_web.loadUrl("javascript: clear(true);");//("javascript:(function(){document.getElementById('clear').click();})()");
-            }
-        });
+        //cast stuff
 
-        collabBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                initial_web.loadUrl("javascript: (function(){toggleDialog();})()");
-            }
-        });
-
-        recordBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alert.show();
-            }
-        });
-
-        penBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String cmd = "";
-                colorPickerDialog.show(getFragmentManager(), tag);
-                colorPickerDialog.setOnColorSelectedListener(new ColorPickerSwatch.OnColorSelectedListener() {
-                    @Override
-                    public void onColorSelected(int color) {
-                        if (color == Color.parseColor("#5bc0de")) {
-                            initial_web.loadUrl("javascript: setColor('#5bc0de');" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "BLUE", LENGTH_SHORT).show();
-                        }
-                        else if(color == Color.parseColor("#5cb85c")){
-                            initial_web.loadUrl("javascript: setColor('#5cb85c');" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "GREEN", LENGTH_SHORT).show();
-                        }
-                        else if(color == Color.parseColor("#f0ad4e")) {
-                            initial_web.loadUrl("javascript: setColor('#f0ad4e');" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "ORANGE", LENGTH_SHORT).show();
-                        }
-                        else if(color == Color.parseColor("#d9534f")) {
-                            initial_web.loadUrl("javascript: setColor('#d9534f');" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "RED", LENGTH_SHORT).show();
-                        }
-                        else if(color == Color.parseColor("#202020")) {
-                            initial_web.loadUrl("javascript: setColor('#202020');" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "BLACK", LENGTH_SHORT).show();
-                        }
-                        else if(color == Color.WHITE){
-                            initial_web.loadUrl("javascript: eraser()" +
-                                    "changeMouse();");
-                            Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
-                        }
-                        else{}
-
-                    }
-                });
-
-            }
-        });
-
-
-        UiChangeListener();
+        mCC = CastContext.getSharedInstance(this);
+        mCC.registerLifecycleCallbacksBeforeIceCreamSandwich(this, savedInstanceState);
+        mCastSession = mCC.getSessionManager().getCurrentCastSession();
     }
 
 
@@ -279,6 +206,10 @@ public class MainActivity extends AppCompatActivity {
             sendInvite(inviteLink);
         }
 
+        @android.webkit.JavascriptInterface
+        public String SetEmail(){
+            return UserEmail;
+        }
 
         @android.webkit.JavascriptInterface
         public int retrefreshCount(){
@@ -310,24 +241,7 @@ public class MainActivity extends AppCompatActivity {
         initial_web.restoreState(savedInstanceState);
     }
 
-    public void UiChangeListener()
-    {
-        final View decorView = getWindow().getDecorView();
-        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
-            @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                    decorView.setSystemUiVisibility(
-                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                }
-            }
-        });
-    }
+
 
     /**
      * generate random string to use with new room
@@ -372,6 +286,14 @@ public class MainActivity extends AppCompatActivity {
             view.loadUrl(url);
             return true;
         }
+
+        @Override
+        public void onPageFinished(WebView view, String url)
+        {
+            view.loadUrl("javascript: enterUsername('"+UserEmail+"');");
+
+        }
+
     }
 
     @Override
@@ -379,8 +301,8 @@ public class MainActivity extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
             initial_web.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    /*View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            |*/ View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -404,12 +326,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+
         super.onPause();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        initial_web.loadUrl("about:blank");
     }
 
     @Override
@@ -431,6 +355,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        mRI = CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), menu, R.id.cast);
         return true;
     }
 
@@ -442,7 +367,12 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.collab) {
+            initial_web.loadUrl("javascript: (function(){toggleDialog();})()");
+            return true;
+        }
+        if (id == R.id.action_pen) {
+            penOptions();
             return true;
         }
 
@@ -457,6 +387,295 @@ public class MainActivity extends AppCompatActivity {
         inviteIntent.setType("text/plain");
         startActivity(inviteIntent);
     }
+
+    public void UiChangeListener()
+    {
+        final View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    decorView.setSystemUiVisibility(
+                            /*View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                    |*/ View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
+        });
+    }
+
+    private void penOptions(){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.pen_dialog, null);
+        AlertDialog.Builder penalert = new AlertDialog.Builder(context);
+        penalert.setTitle("Pen Options");
+        penalert.setView(alertLayout);
+        AlertDialog dialog = penalert.create();
+        dialog.show();
+
+        final TextView pen_size = (TextView) dialog.findViewById(R.id.pen_width);
+        pen_size.setText(penSize + " px");
+
+        Button cp = (Button) dialog.findViewById(R.id.colorpicker);
+        cp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String cmd = "";
+                colorPickerDialog.show(getFragmentManager(), tag);
+                colorPickerDialog.setOnColorSelectedListener(new ColorPickerSwatch.OnColorSelectedListener() {
+                    @Override
+                    public void onColorSelected(int color) {
+                        if (color == Color.parseColor("#5bc0de")) {
+                            initial_web.loadUrl("javascript: setColor('#5bc0de');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "BLUE", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#5cb85c")){
+                            initial_web.loadUrl("javascript: setColor('#5cb85c');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "GREEN", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#f0ad4e")) {
+                            initial_web.loadUrl("javascript: setColor('#f0ad4e');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "ORANGE", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#d9534f")) {
+                            initial_web.loadUrl("javascript: setColor('#d9534f');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "RED", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.parseColor("#202020")) {
+                            initial_web.loadUrl("javascript: setColor('#202020');" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "BLACK", LENGTH_SHORT).show();
+                        }
+                        else if(color == Color.WHITE){
+                            initial_web.loadUrl("javascript: eraser();" +
+                                    "changeMouse();");
+                            Toast.makeText(context, "ERASER", LENGTH_SHORT).show();
+                        }
+                        else{}
+
+                    }
+                });
+            }
+        });
+
+        Button inc = (Button) dialog.findViewById(R.id.button5);
+        inc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                penSize = penSize + 3;
+                pen_size.setText(penSize + " px");
+                initial_web.loadUrl("javascript: setSize(context.lineWidth+3);" +
+                        "changeMouse();");
+            }
+        });
+
+        Button dec = (Button) dialog.findViewById(R.id.button6);
+        dec.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(penSize > 3){
+                    penSize = penSize - 3;
+                    pen_size.setText(penSize + " px");
+                    initial_web.loadUrl("javascript: setSize(context.lineWidth-3);" +
+                            "changeMouse();");
+                }
+
+            }
+        });
+
+        Button clear = (Button) dialog.findViewById(R.id.clear_canvas);
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initial_web.loadUrl("javascript: clear(true);");
+            }
+        });
+
+        Button erase = (Button) dialog.findViewById(R.id.erase);
+        erase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initial_web.loadUrl("javascript: eraser(); changeMouse();");
+            }
+        });
+
+    }
+
+
+    private void setupCastListener() {
+        mSessionManagerListener = new SessionManagerListener<CastSession>() {
+
+            @Override
+            public void onSessionEnded(CastSession session, int error) {
+                onApplicationDisconnected();
+            }
+
+            @Override
+            public void onSessionResumed(CastSession session, boolean wasSuspended) {
+                onApplicationConnected(session);
+            }
+
+            @Override
+            public void onSessionResumeFailed(CastSession session, int error) {
+                onApplicationDisconnected();
+            }
+
+            @Override
+            public void onSessionStarted(CastSession session, String sessionId) {
+                onApplicationConnected(session);
+                mCastSession = session;
+
+                mmC = new messageChannel(getString(R.string.namespace));
+                try {
+                    mCastSession.setMessageReceivedCallbacks(mmC.getNamespace(), mmC);
+                    sendMessage("http://mindcollab.me/cast/" + RoomUrl);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onSessionStartFailed(CastSession session, int error) {
+                onApplicationDisconnected();
+            }
+
+            @Override
+            public void onSessionStarting(CastSession session) {
+                session.sendMessage(getString(R.string.namespace), "http://mindcollab.me/cast/" + RoomUrl);
+            }
+
+            @Override
+            public void onSessionEnding(CastSession session) {}
+
+            @Override
+            public void onSessionResuming(CastSession session, String sessionId) {}
+
+            @Override
+            public void onSessionSuspended(CastSession session, int reason) {}
+
+            private void onApplicationConnected(CastSession castSession) {
+                mCastSession = castSession;
+                mCastSession.sendMessage(getString(R.string.namespace), "http://mindcollab.me/cast/" + RoomUrl);
+
+                invalidateOptionsMenu();
+            }
+
+            private void onApplicationDisconnected() {
+
+                invalidateOptionsMenu();
+            }
+
+
+        };
+    }
+
+    /*
+     * Send a message to the receiver app
+     */
+    private void sendMessage(String message) {
+        if (mmC != null) {
+            mCastSession.sendMessage(mmC.getNamespace(), message);
+        } else {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Custom message channel
+     */
+    static class messageChannel implements Cast.MessageReceivedCallback {
+
+        private final String mNamespace;
+
+        /**
+         * @param namespace the namespace used for sending messages
+         */
+        messageChannel(String namespace) {
+            mNamespace = namespace;
+        }
+
+        /**
+         * @return the namespace used for sending messages
+         */
+        public String getNamespace() {
+            return mNamespace;
+        }
+
+        /*
+         * Receive message from the receiver app
+         */
+        @Override
+        public void onMessageReceived(CastDevice castDevice, String namespace, String message) {
+            Log.d("lol", "onMessageReceived: " + message);
+        }
+
+    }
+
+}
+
+/*        clearBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initial_web.loadUrl("javascript: clear(true);");
+            }
+        });
+
+        collabBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initial_web.loadUrl("javascript: (function(){toggleDialog();})()");
+            }
+        });
+
+        recordBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alert.show();
+            }
+        });
+
+        penBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                *//*
+
+*//*
+            }
+        });*/
+/*        final AlertDialog alert = new AlertDialog.Builder(this, R.style.MyDialogTheme).setTitle(R.string.color_picker_default_title)
+                .setPositiveButton("+", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        initial_web.loadUrl("javascript: setSize(context.lineWidth+3);" +
+                                "changeMouse();");
+                    }
+                })
+                .setNeutralButton("-", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        initial_web.loadUrl("javascript: if (context.lineWidth > 3) {" +
+                                "      setSize(context.lineWidth-3);" +
+                                "    }" +
+                                "changeMouse();");
+                    }
+                })
+                .setView(colorPickerPalette)
+                .create();*/
+//Buttons
+/*        clearBtn = (Button) findViewById(R.id.button8);
+        recordBtn = (Button) findViewById(R.id.button9);
+        penBtn = (Button) findViewById(R.id.button10);
+        collabBtn = (Button) findViewById(R.id.button7);*/
 /*    boolean doubleBackToExitPressedOnce = false;
 
     @Override
@@ -477,4 +696,3 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 2000);
     }*/
-}

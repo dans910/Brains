@@ -530,6 +530,7 @@ public class Login extends AppCompatActivity implements LoaderCallbacks<Cursor>,
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        showProgress(true);
         //result from google sign in
         if(requestCode == RC_SIGN_IN){
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -538,7 +539,8 @@ public class Login extends AppCompatActivity implements LoaderCallbacks<Cursor>,
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
             }else{
-                Toast.makeText(Login.this, "Sign in Failed r", Toast.LENGTH_SHORT).show();
+                showProgress(false);
+                Toast.makeText(Login.this, "Sign in Failed", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -552,6 +554,7 @@ public class Login extends AppCompatActivity implements LoaderCallbacks<Cursor>,
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(!task.isSuccessful()){
+                            showProgress(false);
                             Toast.makeText(Login.this, "Sign In Failed", Toast.LENGTH_SHORT).show();
                         }
                         else{

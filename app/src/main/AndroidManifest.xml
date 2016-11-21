@@ -27,20 +27,16 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
-<!--            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
         </activity>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
             android:hardwareAccelerated="true"
-            android:label="Collaborate"
+            android:label="Collab"
             android:parentActivityName=".menu"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme"><!--.NoActionBar-->
 
             <!--
       ATTENTION: This intent was auto-generated. Follow instructions at
@@ -76,6 +72,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <uses-sdk
+            android:minSdkVersion="21"
+            android:targetSdkVersion="23" />
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="danielsandovalutrgv.brains.CastOptionsProvider" />
+
     </application>
 
 </manifest>

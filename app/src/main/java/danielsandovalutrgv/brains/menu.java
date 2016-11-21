@@ -25,6 +25,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -36,6 +37,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -60,9 +62,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.PrivateKey;
 import java.util.ArrayList;
+import java.util.Random;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 public class menu extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, UserOptions.OnFragmentInteractionListener {
     Context context = this;
     private DrawerLayout drawer;
     private boolean recording = false;
@@ -106,6 +111,11 @@ public class menu extends AppCompatActivity
     private EditText editText;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private static final String CHARACTERS =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    private static final int RLENGTH = 10;
+    private String RoomUrl;
+    private String UserEmail;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -121,6 +131,9 @@ public class menu extends AppCompatActivity
         setContentView(R.layout.activity_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        RoomUrl = generateRandomString();
 
         mAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = mAuth.getCurrentUser();
@@ -187,11 +200,12 @@ public class menu extends AppCompatActivity
 
 
 
-        if (user != null) {
-            // Name, email address, and profile photo Url
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+            if (user != null) {
+                // Name, email address, and profile photo Url
+                String name = user.getDisplayName();
+                String email = user.getEmail();
+                UserEmail = user.getEmail();
+                Uri photoUrl = user.getPhotoUrl();
 
             // The user's ID, unique to the Firebase project. Do NOT use this value to
             // authenticate with your backend server, if you have one. Use
@@ -209,24 +223,7 @@ public class menu extends AppCompatActivity
         }
 
     }
-/*
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-            Log.e("src",src);
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            Log.e("Bitmap","returned");
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("Exception",e.getMessage());
-            return null;
-        }
-    }*/
+
 
     /**
      * This method open the Media files activity
@@ -646,15 +643,32 @@ public class menu extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         Intent intent;
+
+        Fragment fragment = null;
+
         if (id == R.id.privateC) {
 
         } else if (id == R.id.publicC) {
+
+
             intent = new Intent(context, MainActivity.class);
+            intent.putExtra("room", RoomUrl);
+            intent.putExtra("email", UserEmail);
             startActivity(intent);
         } else if (id == R.id.filesList) {
             intent = new Intent(context, micControls.class);
+
             startActivity(intent);
         } else if (id == R.id.nav_manage) {
+
+            Class fc = UserOptions.class;
+            try {
+                fragment = (Fragment) fc.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            FragmentManager fm = getSupportFragmentManager();
+            fm.beginTransaction().replace(R.id.mainFrame, fragment).commit();
 
         } else if (id == R.id.nav_share) {
             mAuth.signOut();
@@ -665,10 +679,15 @@ public class menu extends AppCompatActivity
             sendInvite();
         }
 
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         assert drawer != null;
         drawer.closeDrawer(GravityCompat.START);
         return true;
+
+
+
     }
 
     @Override
@@ -774,6 +793,11 @@ public class menu extends AppCompatActivity
         }
         videoRecorder.start();
         vrecording = true;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 
     /**
@@ -923,9 +947,34 @@ public class menu extends AppCompatActivity
 
         Intent inviteIntent = new Intent();
         inviteIntent.setAction(Intent.ACTION_SEND);
-        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate\n theLink");
+        inviteIntent.putExtra(Intent.EXTRA_TEXT, "Let's Collaborate\nhttp://mindcollab.me/"+ RoomUrl);
         inviteIntent.setType("text/plain");
         startActivity(inviteIntent);
+    }
+
+    public String generateRandomString(){
+        StringBuffer str = new StringBuffer();
+        for(int i=0; i<RLENGTH; i++){
+            int rnd = getRandomNumber();
+            char c = CHARACTERS.charAt(rnd);
+            str.append(c);
+        }
+        return str.toString();
+    }
+
+    /**
+     * get random int
+     */
+    public int getRandomNumber(){
+        int randy=0;
+        Random rndgen = new Random();
+        randy = rndgen.nextInt(CHARACTERS.length());
+        if(randy -1 ==-1){
+            return  randy;
+        }
+        else{
+            return  randy -1;
+        }
     }
 
 }

@@ -2,9 +2,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="danielsandovalutrgv.brains.MainActivity">
+
     <item
+        android:id="@+id/cast"
+        android:title="Cast"
+        app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_pen"
+        android:icon="@drawable/ic_edit"
+        android:title="Pen Options"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/collab"
+        android:icon="@android:drawable/stat_notify_chat"
+        android:title="Collaborate"
+        app:showAsAction="always" />
+<!--&lt;!&ndash;    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        app:showAsAction="never" />-->
 </menu>
